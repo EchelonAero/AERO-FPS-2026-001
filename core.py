@@ -20,7 +20,7 @@ runway_slope = 3
 temp = 20
 wind = 3
 flaps = 1
-thrust = 100
+thrust = 500
 time_step = 0.01
 steps = 30000
 step = 0
@@ -50,7 +50,15 @@ class Airplane:
 
             # Use full thrust for the first 2 seconds, then 40%.
             thrust = self.Thrust if elapsed_time < 2 else self.Thrust * 0.4
-            self.acceleration = thrust / self.mass
+
+            #Rolling friction force
+            self.rolling_res = self.rolling_friction * self.mass * 9.81
+            if self.velocity > 0:
+                self.rolling_res = self.rolling_res
+            else:
+                self.rolling_res = 0
+    
+            self.acceleration = (thrust - self.rolling_res) / self.mass
 
             # Advance the aircraft state by one time step.
             self.velocity += self.acceleration * time_step
@@ -71,17 +79,25 @@ class Airplane:
         df = pd.DataFrame(data)
         df.to_csv('flight_simulation_data.csv', index=False)
         plt.figure(figsize=(10, 6))
+        plt.subplot(3, 1, 1)
+        plt.plot(df['Time'], df['Position'], label='Position (m)')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Position (m)')
+        plt.legend()
+        plt.subplot(3, 1, 2)
+        plt.plot(df['Time'], df['Velocity'], label='Velocity (m/s)')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Velocity (m/s)')
+        plt.legend()
+        plt.subplot(3, 1, 3)
         plt.plot(df['Time'], df['Acceleration'], label='Acceleration (m/s^2)')
         plt.xlabel('Time (s)')
         plt.ylabel('Acceleration (m/s^2)')
-        plt.title('Flight Simulation Data')
         plt.legend()
+        plt.suptitle('Flight Simulation Data')
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
         plt.show()
-
+        
 Airplane1 = Airplane(wing_Area=wing_area, rolling_Friction=rolling_friction_coef, Flaps=flaps, mass=aircraft_mass, Thrust=thrust)
 Airplane1.Takeoff()
 Airplane1.Plot()
-
-        
-
-
