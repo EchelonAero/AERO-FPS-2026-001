@@ -24,6 +24,8 @@ thrust = 500
 time_step = 0.01
 steps = 30000
 step = 0
+rho = 1.225
+drag_coef = 0.02
 
 
 class Airplane:
@@ -36,6 +38,7 @@ class Airplane:
         self.acceleration = 0.0
         self.velocity = 0.0
         self.position = 0.0
+        self.drag_coef = drag_coef
 
 
     
@@ -48,6 +51,9 @@ class Airplane:
         for step in range(steps):
             elapsed_time = step * time_step
 
+            #Drag
+            self.drag = 0.5*rho*self.velocity**2*self.wing_area*self.drag_coef
+
             # Use full thrust for the first 2 seconds, then 40%.
             thrust = self.Thrust if elapsed_time < 2 else self.Thrust * 0.4
 
@@ -58,7 +64,7 @@ class Airplane:
             else:
                 self.rolling_res = 0
     
-            self.acceleration = (thrust - self.rolling_res) / self.mass
+            self.acceleration = (thrust - self.rolling_res - self.drag) / self.mass
 
             # Advance the aircraft state by one time step.
             self.velocity += self.acceleration * time_step
